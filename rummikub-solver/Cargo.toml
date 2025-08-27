@@ -1,0 +1,8 @@
+[package]
+name = "rummikub-solver"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+librummikub = { path = "../librummikub"}
+librummikub-optimization = { path = "../librummikub-optimization"}

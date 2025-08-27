@@ -1,0 +1,7 @@
+[package]
+name = "librummikub-optimization"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+librummikub = { path = "../librummikub" }
