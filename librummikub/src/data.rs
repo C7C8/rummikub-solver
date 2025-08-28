@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+use std::fmt::{Display, Formatter, Write};
 
 /// The color of a tile.
 pub enum Color {
@@ -23,6 +24,23 @@ pub enum Color {
     Black
 }
 
+impl Color {
+    pub fn to_code(&self) -> char {
+        match self {
+            Color::Red => 'R',
+            Color::Blue => 'B',
+            Color::Yellow => 'Y',
+            Color::Black => 'X'
+        }
+    }
+}
+
+impl Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_code().to_string())
+    }
+}
+
 /// An individual, colored tile. Wildcards are represented with a value of 0.
 pub struct Tile {
     /// Numerical value of the tile; 0 is wildcard.
@@ -30,10 +48,26 @@ pub struct Tile {
     pub color: Color
 }
 
+impl Display for Tile {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let value_code = if self.value == 0 { String::from('*') } else { self.value.to_string() };
+        write!(f, "{}{}", self.color, value_code)
+    }
+}
+
 /// Where a tile is being added or removed
 pub enum MoveLocation {
-    Start,
+    Beginning,
     End
+}
+
+impl Display for MoveLocation {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MoveLocation::Beginning=> f.write_char('<'),
+            MoveLocation::End => f.write_char('>')
+        }
+    }
 }
 
 pub enum Move {
@@ -52,6 +86,22 @@ pub enum Move {
     Remove {
         line_idx: u8,
         location: MoveLocation
+    }
+}
+
+impl Display for Move {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Move::Split { line_idx, location } => {
+                write!(f, "{}s{}", line_idx, location)
+            }
+            Move::Add { line_idx, tile, location } => {
+                write!(f, "{}a{}{}", line_idx, location, tile)
+            }
+            Move::Remove { line_idx, location } => {
+                write!(f, "{}r{}", line_idx, location)
+            }
+        }
     }
 }
 
