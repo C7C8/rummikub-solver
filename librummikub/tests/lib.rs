@@ -14,8 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-use librummikub::data::{Color, Move, MoveLocation, Tile};
+use log4rs::append::console::ConsoleAppender;
+use log4rs::Config;
+use log4rs::config::{Appender, Root};
+use log::LevelFilter;
+use librummikub::{Color, Move, MoveLocation, Tile};
+#[cfg(test)]
+#[ctor::ctor]
+fn before_all() {
+    let stdout = ConsoleAppender::builder().build();
+    let config = Config::builder()
+        .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .build(Root::builder().appender("stdout").build(LevelFilter::Trace))
+        .unwrap();
+    log4rs::init_config(config).unwrap();
+}
 
 #[test]
 fn test_tile_serialization() {
@@ -100,5 +113,18 @@ fn test_remove_move_serialization() {
     for case in cases {
         assert_eq!(case.0.to_string(), case.1)
     }
+}
+
+#[test]
+fn test_validate_tile_valid() {
+    assert!(Tile { value: 1, color: Color::Red}.validate().is_ok());
+}
+
+#[test]
+fn test_validate_tile_invalid() {
+    assert_eq!(
+        Tile { value: 14, color: Color::Blue}.validate().err().unwrap(),
+        "Tile value 14 exceeds maximum 13"
+    );
 }
 
