@@ -100,13 +100,19 @@ pub enum Move {
     Add {
         /// The index of the line in the board
         line_idx: u8,
+
+        /// Tile to add
         tile: Tile,
+
+        /// Where to add the tile - on the beginning or the end
         location: MoveLocation,
     },
 
     Remove {
         /// The index of the line in the board
         line_idx: u8,
+
+        /// Where to remove the tile - the beginning or the end
         location: MoveLocation
     }
 }
