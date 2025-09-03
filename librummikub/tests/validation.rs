@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use log4rs::append::console::ConsoleAppender;
-use log4rs::Config;
-use log4rs::config::{Appender, Root};
+use librummikub::{Color, Line, LineType, Tile};
 use log::LevelFilter;
-use librummikub::{Color, Line, LineType, Move, MoveLocation, Tile};
+use log4rs::append::console::ConsoleAppender;
+use log4rs::config::{Appender, Root};
+use log4rs::Config;
 
 
 #[cfg(test)]
@@ -131,7 +131,7 @@ fn line_invalidate_too_small() {
             tiles: vec![
                 Tile {value: 13, color: Color::Blue},
             ]
-        }.validate().err().unwrap().to_string(),
+        }.validate().err().unwrap(),
         "Line length 1 too short, must be at least 3");
 }
 
@@ -146,48 +146,57 @@ fn line_invalidate_bad_tile() {
                 Tile {value: 14, color: Color::Red},
                 Tile {value: 14, color: Color::Yellow},
             ]
-        }.validate().err().unwrap().to_string(),
+        }.validate().err().unwrap(),
         "Invalid tile at index 0: Tile value 14 exceeds maximum 13");
 }
 
 /// Single number lines cannot repeat colors
 #[test]
 fn line_invalidate_single_number_color_repeat() {
-    assert!(Line {
-        r#type: LineType::SingleNumber,
-        tiles: vec![
-            Tile {value: 1, color: Color::Blue},
-            Tile {value: 1, color: Color::Red},
-            Tile {value: 1, color: Color::Red},
-        ]
-    }.validate().is_err());
+    assert_eq!(
+        Line {
+            r#type: LineType::SingleNumber,
+            tiles: vec![
+                Tile {value: 1, color: Color::Blue},
+                Tile {value: 1, color: Color::Red},
+                Tile {value: 1, color: Color::Red},
+            ]
+        }.validate().err().unwrap(),
+        "Tile at index 2 has duplicate color R"
+    );
 }
 
 /// Single number lines cannot repeat colors, even if one the repeated color tile is a wildcard
 #[test]
 fn line_invalidate_single_number_color_repeat_wildcard() {
     // TODO Allow for game rule change where wildcards make colors wild too
-    assert!(Line {
-        r#type: LineType::SingleNumber,
-        tiles: vec![
-            Tile {value: 1, color: Color::Blue},
-            Tile {value: 1, color: Color::Red},
-            Tile {value: 0, color: Color::Red},
-        ]
-    }.validate().is_err());
+    assert_eq!(
+        Line {
+            r#type: LineType::SingleNumber,
+            tiles: vec![
+                Tile {value: 1, color: Color::Blue},
+                Tile {value: 1, color: Color::Red},
+                Tile {value: 0, color: Color::Red},
+            ]
+        }.validate().err().unwrap(),
+        "Tile at index 2 has duplicate color R"
+    );
 }
 
 /// Single number lines must only contain one number (or wildcard)
 #[test]
 fn line_invalidate_single_number_bad_number() {
-    assert!(Line {
+    assert_eq!(
+        Line {
         r#type: LineType::SingleNumber,
         tiles: vec![
             Tile {value: 1, color: Color::Blue},
             Tile {value: 1, color: Color::Red},
             Tile {value: 2, color: Color::Yellow},
         ]
-    }.validate().is_err());
+    }.validate().err().unwrap(),
+        "Tile at index 2 has value 2 but 1 was expected"
+    );
 }
 
 /****************************
@@ -286,45 +295,54 @@ fn line_validate_sequence_multi_wildcard() {
 /// Sequences must all be one color
 #[test]
 fn line_invalidate_sequence_bad_color() {
-    assert!(Line {
-        r#type: LineType::NumberSequence,
-        tiles: vec![
-            Tile {value: 8, color: Color::Red},
-            Tile {value: 9, color: Color::Red},
-            Tile {value: 10, color: Color::Blue},
-        ]
-    }.validate().is_err());
+    assert_eq!(
+        Line {
+            r#type: LineType::NumberSequence,
+            tiles: vec![
+                Tile {value: 8, color: Color::Red},
+                Tile {value: 9, color: Color::Red},
+                Tile {value: 10, color: Color::Blue},
+            ]
+        }.validate().err().unwrap(),
+        "Tile at index 2 has color B but R was expected"
+    );
 }
 
 /// Sequences cannot skip numbers
 #[test]
 fn line_invalidate_sequence_number_skip() {
-    assert!(Line {
-        r#type: LineType::NumberSequence,
-        tiles: vec![
-            Tile {value: 8, color: Color::Blue},
-            Tile {value: 9, color: Color::Blue},
-            Tile {value: 10, color: Color::Blue},
-            // 11 skipped
-            Tile {value: 12, color: Color::Blue},
-            Tile {value: 13, color: Color::Blue},
-        ]
-    }.validate().is_err());
+    assert_eq!(
+        Line {
+            r#type: LineType::NumberSequence,
+            tiles: vec![
+                Tile {value: 8, color: Color::Blue},
+                Tile {value: 9, color: Color::Blue},
+                Tile {value: 10, color: Color::Blue},
+                // 11 skipped
+                Tile {value: 12, color: Color::Blue},
+                Tile {value: 13, color: Color::Blue},
+            ]
+        }.validate().err().unwrap(),
+        "Tile at index 3 was expected to have number 11 but had 12"
+    );
 }
 
 /// Sequences can have wildcards so long as the color of the wildcard matches
 #[test]
 fn line_invalidate_sequence_bad_wildcard_color() {
     // TODO add option for wildcards to be color-wild as well
-    assert!(Line {
-        r#type: LineType::NumberSequence,
-        tiles: vec![
-            Tile {value: 8, color: Color::Blue},
-            Tile {value: 9, color: Color::Blue},
-            Tile {value: 0, color: Color::Red},
-            Tile {value: 11, color: Color::Blue},
-        ]
-    }.validate().is_err());
+    assert_eq!(
+        Line {
+            r#type: LineType::NumberSequence,
+            tiles: vec![
+                Tile {value: 8, color: Color::Blue},
+                Tile {value: 9, color: Color::Blue},
+                Tile {value: 0, color: Color::Red},
+                Tile {value: 11, color: Color::Blue},
+            ]
+        }.validate().err().unwrap(),
+        "Tile at index 2 has color R but B was expected"
+    );
 }
 
 /// Sequences of all wildcards should fail. Note that in a real game this will probably
@@ -332,12 +350,15 @@ fn line_invalidate_sequence_bad_wildcard_color() {
 #[test]
 fn line_invalidate_sequence_all_wildcards() {
     // TODO Verify that this should be illegal
-    assert!(Line {
-        r#type: LineType::NumberSequence,
-        tiles: vec![
-            Tile {value: 0, color: Color::Blue},
-            Tile {value: 0, color: Color::Blue},
-            Tile {value: 0, color: Color::Blue},
-        ]
-    }.validate().is_err());
+    assert_eq!(
+        Line {
+            r#type: LineType::NumberSequence,
+            tiles: vec![
+                Tile {value: 0, color: Color::Blue},
+                Tile {value: 0, color: Color::Blue},
+                Tile {value: 0, color: Color::Blue},
+            ]
+        }.validate().err().unwrap(),
+        "Line is all wildcards"
+    );
 }
