@@ -53,7 +53,7 @@ pub enum Move {
     /// Split an exisitng line into two lines at a given point.
     SplitLine {
         /// The index of the line in the board
-        line_idx: u8,
+        line_idx: u16,
 
         /// Index of the split location. The split will be *after* the location.
         location: u8
@@ -62,7 +62,7 @@ pub enum Move {
     /// Add a tile to the beginning or end of a line.
     AddTile {
         /// The index of the line in the board
-        line_idx: u8,
+        line_idx: u16,
 
         /// Tile to add
         tile: Tile,
@@ -74,7 +74,7 @@ pub enum Move {
     /// Remove a tile at the beginning or end of a line.
     RemoveTile {
         /// The index of the line in the board
-        line_idx: u8,
+        line_idx: u16,
 
         /// Where to remove the tile - the beginning or the end
         location: MoveLocation

@@ -425,3 +425,243 @@ fn board_validate_error() {
         "Invalid line at index 0: Tile at index 1 has value 2 but 1 was expected"
     );
 }
+
+/*********
+ * MOVES *
+ *********/
+
+/// Validate add moves
+#[test]
+fn board_validate_add_move() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 1, color: Color::Blue},
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            },
+            Line {
+                r#type: LineType::NumberSequence,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Red},
+                    Tile {value: 3, color: Color::Red},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+
+    let r#move = Move::AddTile {
+        line_idx: 1,
+        location: MoveLocation::End,
+        tile: Tile {value: 4, color: Color::Red},
+    };
+
+    assert!(board.validate_move(&r#move).is_ok());
+}
+
+/// Validate remove moves
+#[test]
+fn board_validate_remove_move() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 1, color: Color::Blue},
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            },
+            Line {
+                r#type: LineType::NumberSequence,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Red},
+                    Tile {value: 3, color: Color::Red},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+
+    let r#move = Move::RemoveTile {
+        line_idx: 0,
+        location: MoveLocation::End,
+    };
+
+    assert!(board.validate_move(&r#move).is_ok());
+}
+
+/// Validate split moves
+#[test]
+fn board_validate_split_move() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 1, color: Color::Blue},
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            },
+            Line {
+                r#type: LineType::NumberSequence,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Red},
+                    Tile {value: 3, color: Color::Red},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+
+    let r#move = Move::SplitLine {
+        line_idx: 1,
+        location: 1
+    };
+
+    assert!(board.validate_move(&r#move).is_ok());
+}
+
+/// Validate create-line moves.
+#[test]
+fn board_validate_create_line() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 1, color: Color::Blue},
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            },
+            Line {
+                r#type: LineType::NumberSequence,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Red},
+                    Tile {value: 3, color: Color::Red},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+    let r#move = Move::CreateLine { tiles: vec![
+        Tile {value: 1, color: Color::Red},
+        Tile {value: 1, color: Color::Blue},
+        Tile {value: 1, color: Color::Yellow},
+    ]};
+
+    assert!(board.validate_move(&r#move).is_ok());
+}
+
+/// No move can alter a line that does not exist.
+#[test]
+fn board_invalidate_line_does_not_exist() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 1, color: Color::Blue},
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            },
+            Line {
+                r#type: LineType::NumberSequence,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Red},
+                    Tile {value: 3, color: Color::Red},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+
+    assert_eq!(
+        board.validate_move(&Move::SplitLine {
+            line_idx: 2,
+            location: 1
+        }).err().unwrap(),
+        "Line at index 2 does not exist"
+    );
+
+    assert_eq!(
+        board.validate_move(&Move::AddTile {
+            line_idx: 2,
+            location: MoveLocation::End,
+            tile: Tile { value: 0, color: Color::Red}
+        }).err().unwrap(),
+        "Line at index 2 does not exist"
+    );
+
+    assert_eq!(
+        board.validate_move(&Move::RemoveTile{
+            line_idx: 2,
+            location: MoveLocation::End
+        }).err().unwrap(),
+        "Line at index 2 does not exist"
+    );
+}
+
+/// Removes can't remove when the line would be deleted.
+#[test]
+fn board_invalidate_remove_too_few() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+    let r#move = Move::RemoveTile {
+        line_idx: 0,
+        location: MoveLocation::End
+    };
+
+    assert_eq!(
+        board.validate_move(&r#move).err().unwrap(),
+        "Line at index 0 has length 1 and cannot be removed from"
+    );
+}
+
+///Splits can't split past the end
+#[test]
+fn board_invalidate_split_at_end() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Yellow},
+                    Tile {value: 2, color: Color::Yellow},
+                    Tile {value: 3, color: Color::Yellow},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+    let r#move = Move::SplitLine {
+        line_idx: 0,
+        location: 2
+    };
+
+    assert_eq!(
+        board.validate_move(&r#move).err().unwrap(),
+        "Line at index 0 has length 3 and cannot be split past index 1"
+    );
+}

@@ -16,7 +16,7 @@
  */
 use std::collections::HashSet;
 use log::{debug, trace};
-use crate::{Board, Color, Line, LineType, Move, Sequence, Tile};
+use crate::{Board, Color, Line, LineType, Move, Tile};
 
 /*********
  * TILES *
@@ -158,12 +158,40 @@ impl Board {
     /// Validate that a given move can be executed -- **not** necessarily that the board will end
     /// in a legal state at the end of that move. To confirm a *sequence* of move, see [Board::validate_sequence]
     pub fn validate_move(&self, r#move: &Move) -> Result<(), String> {
-        // TODO Implement
-        Ok(())
-    }
+        trace!("Validating move {}", r#move);
 
-    pub fn validate_sequence(&self, sequence: &Sequence) -> Result<(), String> {
-        // TODO Implement
+        match r#move {
+            Move::SplitLine { line_idx, location } => {
+                let Some(line) = self.lines.get(*line_idx as usize) else {
+                    return Err(format!("Line at index {} does not exist", line_idx))
+                };
+
+                if *location as usize >= line.tiles.len() - 1 {
+                    return Err(format!("Line at index {} has length {} and cannot be split past index {}", line_idx, line.tiles.len(), line.tiles.len() - 2))
+                }
+            },
+
+            Move::AddTile { line_idx, location, tile } => {
+                let Some(line) = self.lines.get(*line_idx as usize) else {
+                    return Err(format!("Line at index {} does not exist", line_idx))
+                };
+            }
+
+            Move::RemoveTile { line_idx, location } => {
+                let Some(line) = self.lines.get(*line_idx as usize) else {
+                    return Err(format!("Line at index {} does not exist", line_idx))
+                };
+
+                if line.tiles.len() <= 1 {
+                    return Err(format!("Line at index {} has length {} and cannot be removed from", line_idx, line.tiles.len()))
+                }
+            },
+
+            Move::CreateLine { tiles } => {
+                // Pass; this is always valid!
+            }
+        };
+
         Ok(())
     }
 }
