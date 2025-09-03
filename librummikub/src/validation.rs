@@ -23,15 +23,15 @@ use crate::{Board, Color, Line, LineType, Move, Tile};
  *********/
 
 impl Tile {
-    /// Validate that this tile obeys the game rules.
-    pub fn validate(&self) -> Result<(), String> {
-        trace!("Validating tile {}", self);
-        if self.value > 13 {
-            Err(format!("Tile value {} exceeds maximum 13", self.value))
-        } else {
-            Ok(())
-        }
-    }
+	/// Validate that this tile obeys the game rules.
+	pub fn validate(&self) -> Result<(), String> {
+		trace!("Validating tile {}", self);
+		if self.value > 13 {
+			Err(format!("Tile value {} exceeds maximum 13", self.value))
+		} else {
+			Ok(())
+		}
+	}
 }
 
 /*********
@@ -39,101 +39,101 @@ impl Tile {
  *********/
 
 impl Line {
-    /// Validate that this line meets the game rules
-    pub fn validate(&self) -> Result<(), String> {
-        debug!("Validating line {}", self);
+	/// Validate that this line meets the game rules
+	pub fn validate(&self) -> Result<(), String> {
+		debug!("Validating line {}", self);
 
-        // Lines must be at least 3 long
-        if self.tiles.len() < 3 {
-            return Err(format!("Line length {} too short, must be at least 3", self.tiles.len()));
-        }
+		// Lines must be at least 3 long
+		if self.tiles.len() < 3 {
+			return Err(format!("Line length {} too short, must be at least 3", self.tiles.len()));
+		}
 
-        // Validate each tile individually - valid lines cannot have invalid tiles.
-        for (i, tile) in self.tiles.iter().enumerate() {
-            if let Err(e) = tile.validate() {
-                return Err(format!("Invalid tile at index {}: {}", i, e))
-            }
-        }
+		// Validate each tile individually - valid lines cannot have invalid tiles.
+		for (i, tile) in self.tiles.iter().enumerate() {
+			if let Err(e) = tile.validate() {
+				return Err(format!("Invalid tile at index {}: {}", i, e))
+			}
+		}
 
-        // Line-type-specific validation
-        match self.r#type {
-            LineType::SingleNumber => {
-                // Single-number lines must be all different colors but the same number. They can
-                // have wildcards however, so in case the first item is a wildcard we must identify
-                // the single number to check for.
-                let mut number: u8 = 0;
-                for tile in self.tiles.iter() {
-                    if tile.value != 0 {
-                        number = tile.value;
-                        break;
-                    }
-                }
-                trace!("Single-number line {} has number {}", self, number);
+		// Line-type-specific validation
+		match self.r#type {
+			LineType::SingleNumber => {
+				// Single-number lines must be all different colors but the same number. They can
+				// have wildcards however, so in case the first item is a wildcard we must identify
+				// the single number to check for.
+				let mut number: u8 = 0;
+				for tile in self.tiles.iter() {
+					if tile.value != 0 {
+						number = tile.value;
+						break;
+					}
+				}
+				trace!("Single-number line {} has number {}", self, number);
 
-                // TODO Optimize to remove second iteration? Low priority.
-                let mut found_colors: HashSet<Color> = HashSet::new();
-                for (i, tile) in self.tiles.iter().enumerate() {
-                    // Check to make sure the number is as expected - or a wildcard
-                    if tile.value != number && tile.value != 0 {
-                        return Err(format!("Tile at index {} has value {} but {} was expected", i, tile.value, number));
-                    }
+				// TODO Optimize to remove second iteration? Low priority.
+				let mut found_colors: HashSet<Color> = HashSet::new();
+				for (i, tile) in self.tiles.iter().enumerate() {
+					// Check to make sure the number is as expected - or a wildcard
+					if tile.value != number && tile.value != 0 {
+						return Err(format!("Tile at index {} has value {} but {} was expected", i, tile.value, number));
+					}
 
-                    // Now check if the color has been seen already. If it has, error.
-                    if found_colors.contains(&tile.color) {
-                        return Err(format!("Tile at index {} has duplicate color {}", i, tile.color));
-                    }
-                    found_colors.insert(tile.color);
-                }
+					// Now check if the color has been seen already. If it has, error.
+					if found_colors.contains(&tile.color) {
+						return Err(format!("Tile at index {} has duplicate color {}", i, tile.color));
+					}
+					found_colors.insert(tile.color);
+				}
 
-                // Line validated!
-                Ok(())
-            }
-            LineType::NumberSequence => {
-                // Identify the color. We'll identify the starting number on the fly.
-                let color = self.tiles.first().unwrap().color;
-                let mut expected_number: u8 = 0;
+				// Line validated!
+				Ok(())
+			}
+			LineType::NumberSequence => {
+				// Identify the color. We'll identify the starting number on the fly.
+				let color = self.tiles.first().unwrap().color;
+				let mut expected_number: u8 = 0;
 
-                for (i, tile) in self.tiles.iter().enumerate() {
-                    if expected_number == 0 && tile.value != 0 {
-                        trace!("Identified starting number for line {} as {}", self, tile.value);
-                        expected_number = tile.value;
-                    }
+				for (i, tile) in self.tiles.iter().enumerate() {
+					if expected_number == 0 && tile.value != 0 {
+						trace!("Identified starting number for line {} as {}", self, tile.value);
+						expected_number = tile.value;
+					}
 
-                    // Color check
-                    if tile.color != color {
-                        return Err(format!("Tile at index {} has color {} but {} was expected", i, tile.color, color));
-                    }
+					// Color check
+					if tile.color != color {
+						return Err(format!("Tile at index {} has color {} but {} was expected", i, tile.color, color));
+					}
 
-                    if tile.value != 0 && tile.value != expected_number {
-                        return Err(format!("Tile at index {} was expected to have number {} but had {}", i, expected_number, tile.value));
-                    }
+					if tile.value != 0 && tile.value != expected_number {
+						return Err(format!("Tile at index {} was expected to have number {} but had {}", i, expected_number, tile.value));
+					}
 
-                    if expected_number != 0 {
-                        expected_number += 1
-                    };
-                }
+					if expected_number != 0 {
+						expected_number += 1
+					};
+				}
 
-                if expected_number == 0 {
-                    return Err("Line is all wildcards".to_string());
-                }
+				if expected_number == 0 {
+					return Err("Line is all wildcards".to_string());
+				}
 
-                // Line validated!
-                Ok(())
-            }
-        }
-    }
+				// Line validated!
+				Ok(())
+			}
+		}
+	}
 
-    /// Validate that this move can be performed against this line
-    pub fn validate_move(&self, r#move: &Move) -> Result<(), String> {
-        Ok(())
-    }
+	/// Validate that this move can be performed against this line
+	pub fn validate_move(&self, r#move: &Move) -> Result<(), String> {
+		Ok(())
+	}
 
-    /// Execute a given move against this line. In the event of a split move, this will return a
-    /// second line that should be added to the board.
-    pub fn execute_move(&self, r#move: &Move) -> Result<Option<Line>, String> {
-        // TODO implement
-        Ok(None)
-    }
+	/// Execute a given move against this line. In the event of a split move, this will return a
+	/// second line that should be added to the board.
+	pub fn execute_move(&self, r#move: &Move) -> Result<Option<Line>, String> {
+		// TODO implement
+		Ok(None)
+	}
 }
 
 /**********
@@ -141,57 +141,57 @@ impl Line {
  **********/
 
 impl Board {
-    /// Validate that the board is in a good state according to the game rules.
-    pub fn validate(&self) -> Result<(), String> {
-        trace!("Validating board {}", self);
+	/// Validate that the board is in a good state according to the game rules.
+	pub fn validate(&self) -> Result<(), String> {
+		trace!("Validating board {}", self);
 
-        // Validate tiles
-        for (i, line) in self.lines.iter().enumerate() {
-            if let Err(e) = line.validate() {
-                return Err(format!("Invalid line at index {}: {}", i, e));
-            }
-        }
+		// Validate tiles
+		for (i, line) in self.lines.iter().enumerate() {
+			if let Err(e) = line.validate() {
+				return Err(format!("Invalid line at index {}: {}", i, e));
+			}
+		}
 
-        Ok(())
-    }
+		Ok(())
+	}
 
-    /// Validate that a given move can be executed -- **not** necessarily that the board will end
-    /// in a legal state at the end of that move. To confirm a *sequence* of move, see [Board::validate_sequence]
-    pub fn validate_move(&self, r#move: &Move) -> Result<(), String> {
-        trace!("Validating move {}", r#move);
+	/// Validate that a given move can be executed -- **not** necessarily that the board will end
+	/// in a legal state at the end of that move. To confirm a *sequence* of move, see [Board::validate_sequence]
+	pub fn validate_move(&self, r#move: &Move) -> Result<(), String> {
+		trace!("Validating move {}", r#move);
 
-        match r#move {
-            Move::SplitLine { line_idx, location } => {
-                let Some(line) = self.lines.get(*line_idx as usize) else {
-                    return Err(format!("Line at index {} does not exist", line_idx))
-                };
+		match r#move {
+			Move::SplitLine { line_idx, location } => {
+				let Some(line) = self.lines.get(*line_idx as usize) else {
+					return Err(format!("Line at index {} does not exist", line_idx))
+				};
 
-                if *location as usize >= line.tiles.len() - 1 {
-                    return Err(format!("Line at index {} has length {} and cannot be split past index {}", line_idx, line.tiles.len(), line.tiles.len() - 2))
-                }
-            },
+				if *location as usize >= line.tiles.len() - 1 {
+					return Err(format!("Line at index {} has length {} and cannot be split past index {}", line_idx, line.tiles.len(), line.tiles.len() - 2))
+				}
+			},
 
-            Move::AddTile { line_idx, location, tile } => {
-                let Some(line) = self.lines.get(*line_idx as usize) else {
-                    return Err(format!("Line at index {} does not exist", line_idx))
-                };
-            }
+			Move::AddTile { line_idx, location, tile } => {
+				let Some(line) = self.lines.get(*line_idx as usize) else {
+					return Err(format!("Line at index {} does not exist", line_idx))
+				};
+			}
 
-            Move::RemoveTile { line_idx, location } => {
-                let Some(line) = self.lines.get(*line_idx as usize) else {
-                    return Err(format!("Line at index {} does not exist", line_idx))
-                };
+			Move::RemoveTile { line_idx, location } => {
+				let Some(line) = self.lines.get(*line_idx as usize) else {
+					return Err(format!("Line at index {} does not exist", line_idx))
+				};
 
-                if line.tiles.len() <= 1 {
-                    return Err(format!("Line at index {} has length {} and cannot be removed from", line_idx, line.tiles.len()))
-                }
-            },
+				if line.tiles.len() <= 1 {
+					return Err(format!("Line at index {} has length {} and cannot be removed from", line_idx, line.tiles.len()))
+				}
+			},
 
-            Move::CreateLine { tiles } => {
-                // Pass; this is always valid!
-            }
-        };
+			Move::CreateLine { tiles } => {
+				// Pass; this is always valid!
+			}
+		};
 
-        Ok(())
-    }
+		Ok(())
+	}
 }
