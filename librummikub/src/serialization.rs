@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-use crate::{Color, Line, LineType, Move, MoveLocation, Tile};
+use crate::{Board, Color, Line, LineType, Move, MoveLocation, Tile};
 use std::fmt::{Display, Formatter, Write};
 
 /*********
@@ -49,9 +49,35 @@ impl Display for Line {
             LineType::SingleNumber => write!(f, "S:")?,
             LineType::NumberSequence => write!(f, "M:")?,
         }
-        for tile in self.tiles.iter() {
-            write!(f, "{};", tile)?
+
+        for (i, tile) in self.tiles.iter().enumerate() {
+            write!(f, "{}", tile)?;
+            if i < self.tiles.len() - 1 {
+                write!(f, "-")?;
+            }
         }
+
+        Ok(())
+    }
+}
+
+/**********
+ * BOARDS *
+ **********/
+
+impl Display for Board {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // TODO Reconsider omission of board history from the serialization
+        write!(f, "[")?;
+        for (i, line) in self.lines.iter().enumerate() {
+            write!(f, "{}", line)?;
+            if i < self.lines.len() - 1 {
+                write!(f, "; ")?;
+            }
+        }
+
+        write!(f, "]")?;
+
         Ok(())
     }
 }

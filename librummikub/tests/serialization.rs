@@ -19,7 +19,7 @@ use log4rs::append::console::ConsoleAppender;
 use log4rs::Config;
 use log4rs::config::{Appender, Root};
 use log::LevelFilter;
-use librummikub::{Color, Line, LineType, Move, MoveLocation, Tile};
+use librummikub::{Board, Color, Line, LineType, Move, MoveLocation, Tile};
 
 #[cfg(test)]
 #[ctor::ctor]
@@ -126,7 +126,7 @@ fn line_serialization() {
                 Tile {value: 2, color: Color::Red},
                 Tile {value: 3, color: Color::Red}
             ]},
-            "M:R1;R2;R3;"
+            "M:R1-R2-R3"
         ),
         (
             Line {r#type: LineType::SingleNumber, tiles: vec![
@@ -134,7 +134,7 @@ fn line_serialization() {
                 Tile {value: 1, color: Color::Blue},
                 Tile {value: 1, color: Color::Yellow}
             ]},
-            "S:R1;B1;Y1;"
+            "S:R1-B1-Y1"
         ),
         (
             Line {r#type: LineType::NumberSequence, tiles: vec![
@@ -142,11 +142,39 @@ fn line_serialization() {
                 Tile {value: 0, color: Color::Red},
                 Tile {value: 3, color: Color::Red}
             ]},
-            "M:R1;R*;R3;"
+            "M:R1-R*-R3"
         )
     ];
 
     for case in cases {
         assert_eq!(case.0.to_string(), case.1)
     }
+}
+
+#[test]
+fn board_serialization() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Blue},
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            },
+            Line {
+                r#type: LineType::NumberSequence,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Red},
+                    Tile {value: 3, color: Color::Red},
+                    Tile {value: 4, color: Color::Red},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+
+    assert_eq!(board.to_string(), "[S:R1-B2-Y1; M:R1-R2-R3-R4]");
 }
