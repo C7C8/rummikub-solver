@@ -22,6 +22,7 @@ mod validation;
  **********/
 
 /// The color of a tile.
+#[derive(Eq, Hash, PartialEq, Copy, Clone)]
 pub enum Color {
     Red,
     Blue,

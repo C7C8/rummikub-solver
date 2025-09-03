@@ -50,6 +50,7 @@ fn tile_validate_invalid() {
  * LINE SINGLE HAPPY PATH *
  **************************/
 
+/// Simple triples should pass
 #[test]
 fn line_validate_single_number_triple() {
     assert!(Line {
@@ -62,6 +63,7 @@ fn line_validate_single_number_triple() {
     }.validate().is_ok())
 }
 
+/// Simple quads should pass
 #[test]
 fn line_validate_single_number_quad() {
     assert!(Line {
@@ -75,6 +77,7 @@ fn line_validate_single_number_quad() {
     }.validate().is_ok());
 }
 
+/// Triples with wildcards should pass
 #[test]
 fn line_validate_single_number_triple_wildcard() {
     assert!(Line {
@@ -87,6 +90,7 @@ fn line_validate_single_number_triple_wildcard() {
     }.validate().is_ok());
 }
 
+/// Triples with **multiple** wildcards should pass
 #[test]
 fn line_validate_single_number_triple_wildcard_2x() {
     assert!(Line {
@@ -99,6 +103,7 @@ fn line_validate_single_number_triple_wildcard_2x() {
     }.validate().is_ok());
 }
 
+///Triples of all wildcards should pass too
 #[test]
 fn line_validate_single_number_triple_wildcard_all() {
     // TODO should this actually be legal?
@@ -117,18 +122,35 @@ fn line_validate_single_number_triple_wildcard_all() {
  * LINE SINGLE EXCEPTION PATH *
  ******************************/
 
+/// Fail lines that are less than 3 tiles
 #[test]
-fn line_invalidate_bad_tile() {
-    assert!(Line {
-        r#type: LineType::SingleNumber,
-        tiles: vec![
-            Tile {value: 14, color: Color::Blue},
-            Tile {value: 14, color: Color::Red},
-            Tile {value: 14, color: Color::Red},
-        ]
-    }.validate().is_err());
+fn line_invalidate_too_small() {
+    assert_eq!(
+        Line {
+            r#type: LineType::SingleNumber,
+            tiles: vec![
+                Tile {value: 13, color: Color::Blue},
+            ]
+        }.validate().err().unwrap().to_string(),
+        "Line length 1 too short, must be at least 3");
 }
 
+/// Fail lines that would otherwise be valid were it not for invalid tiles
+#[test]
+fn line_invalidate_bad_tile() {
+    assert_eq!(
+        Line {
+            r#type: LineType::SingleNumber,
+            tiles: vec![
+                Tile {value: 14, color: Color::Blue},
+                Tile {value: 14, color: Color::Red},
+                Tile {value: 14, color: Color::Yellow},
+            ]
+        }.validate().err().unwrap().to_string(),
+        "Invalid tile at index 0: Tile value 14 exceeds maximum 13");
+}
+
+/// Single number lines cannot repeat colors
 #[test]
 fn line_invalidate_single_number_color_repeat() {
     assert!(Line {
@@ -141,6 +163,7 @@ fn line_invalidate_single_number_color_repeat() {
     }.validate().is_err());
 }
 
+/// Single number lines cannot repeat colors, even if one the repeated color tile is a wildcard
 #[test]
 fn line_invalidate_single_number_color_repeat_wildcard() {
     // TODO Allow for game rule change where wildcards make colors wild too
@@ -154,6 +177,7 @@ fn line_invalidate_single_number_color_repeat_wildcard() {
     }.validate().is_err());
 }
 
+/// Single number lines must only contain one number (or wildcard)
 #[test]
 fn line_invalidate_single_number_bad_number() {
     assert!(Line {
@@ -170,6 +194,7 @@ fn line_invalidate_single_number_bad_number() {
  * LINE SEQUENCE HAPPY PATH *
  ****************************/
 
+/// Simple triplet sequences should pass
 #[test]
 fn line_validate_sequence() {
     assert!(Line {
@@ -182,6 +207,7 @@ fn line_validate_sequence() {
     }.validate().is_ok());
 }
 
+/// Sequences can start at any number
 #[test]
 fn line_validate_sequence_middle_start() {
     assert!(Line {
@@ -194,6 +220,7 @@ fn line_validate_sequence_middle_start() {
     }.validate().is_ok());
 }
 
+/// Sequences can include wildcards
 #[test]
 fn line_validate_sequence_wildcard() {
     assert!(Line {
@@ -206,6 +233,7 @@ fn line_validate_sequence_wildcard() {
     }.validate().is_ok());
 }
 
+/// Sequences can have very long lengths
 #[test]
 fn line_validate_sequence_full_length() {
     assert!(Line {
@@ -228,6 +256,7 @@ fn line_validate_sequence_full_length() {
     }.validate().is_ok());
 }
 
+/// Sequences can have multiple wildcards
 #[test]
 fn line_validate_sequence_multi_wildcard() {
     assert!(Line {
@@ -254,6 +283,7 @@ fn line_validate_sequence_multi_wildcard() {
  * LINE SEQUENCE EXCEPTION PATH *
  ********************************/
 
+/// Sequences must all be one color
 #[test]
 fn line_invalidate_sequence_bad_color() {
     assert!(Line {
@@ -266,6 +296,7 @@ fn line_invalidate_sequence_bad_color() {
     }.validate().is_err());
 }
 
+/// Sequences cannot skip numbers
 #[test]
 fn line_invalidate_sequence_number_skip() {
     assert!(Line {
@@ -281,8 +312,10 @@ fn line_invalidate_sequence_number_skip() {
     }.validate().is_err());
 }
 
+/// Sequences can have wildcards so long as the color of the wildcard matches
 #[test]
 fn line_invalidate_sequence_bad_wildcard_color() {
+    // TODO add option for wildcards to be color-wild as well
     assert!(Line {
         r#type: LineType::NumberSequence,
         tiles: vec![
@@ -290,6 +323,21 @@ fn line_invalidate_sequence_bad_wildcard_color() {
             Tile {value: 9, color: Color::Blue},
             Tile {value: 0, color: Color::Red},
             Tile {value: 11, color: Color::Blue},
+        ]
+    }.validate().is_err());
+}
+
+/// Sequences of all wildcards should fail. Note that in a real game this will probably
+/// never happen.
+#[test]
+fn line_invalidate_sequence_all_wildcards() {
+    // TODO Verify that this should be illegal
+    assert!(Line {
+        r#type: LineType::NumberSequence,
+        tiles: vec![
+            Tile {value: 0, color: Color::Blue},
+            Tile {value: 0, color: Color::Blue},
+            Tile {value: 0, color: Color::Blue},
         ]
     }.validate().is_err());
 }
