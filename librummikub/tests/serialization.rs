@@ -33,7 +33,7 @@ fn before_all() {
 }
 
 #[test]
-fn test_tile_serialization() {
+fn tile_serialization() {
     let cases = vec![
         (Tile { value: 1, color: Color::Red}, "R1"),
         (Tile { value: 7, color: Color::Yellow}, "Y7"),
@@ -53,7 +53,7 @@ fn test_tile_serialization() {
 }
 
 #[test]
-fn test_split_move_serialization() {
+fn split_move_serialization() {
     let cases = vec![
         (Move::Split {line_idx: 0, location: 1}, "0s1"),
         (Move::Split {line_idx: 1, location: 7}, "1s7"),
@@ -68,7 +68,7 @@ fn test_split_move_serialization() {
 }
 
 #[test]
-fn test_add_move_serialization() {
+fn add_move_serialization() {
     let cases = vec![
         (Move::Add {line_idx: 0, tile: Tile { value: 1, color: Color::Red}, location: MoveLocation::End}, "0a>R1"),
         (Move::Add {line_idx: 1, tile: Tile { value: 7, color: Color::Blue}, location: MoveLocation::Beginning}, "1a<B7"),
@@ -98,7 +98,7 @@ fn test_add_move_serialization() {
 }
 
 #[test]
-fn test_remove_move_serialization() {
+fn remove_move_serialization() {
     let cases = vec![
         (Move::Remove {line_idx: 1, location: MoveLocation::Beginning}, "1r<"),
         (Move::Remove {line_idx: 7, location: MoveLocation::End}, "7r>"),

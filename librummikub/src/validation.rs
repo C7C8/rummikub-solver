@@ -60,16 +60,16 @@ impl Move {
 
 impl Line {
     /// Validate that is line meets the game rules
-    fn validate(&self) -> Result<(), String> {
+    pub fn validate(&self) -> Result<(), String> {
         // TODO implement
         Ok(())
     }
 
-    fn validate_move(&self, r#move: &Move) -> Result<(), String> {
+    pub fn validate_move(&self, r#move: &Move) -> Result<(), String> {
         Ok(())
     }
 
-    fn execute_move(&self, r#move: &Move) -> Result<(), String> {
+    pub fn execute_move(&self, r#move: &Move) -> Result<(), String> {
         // TODO implement
         Ok(())
     }
