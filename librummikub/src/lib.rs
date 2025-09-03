@@ -46,6 +46,8 @@ pub enum MoveLocation {
     End
 }
 
+/// A game move that can be executed. Does not necessarily leave the board in a rules-compliant
+/// state after execution.
 pub enum Move {
     Split {
         /// The index of the line in the board
@@ -91,6 +93,7 @@ pub struct Line {
     pub r#type: LineType,
 }
 
+/// A game 'board', representing the lines of tiles contained within and a history of move sequences.
 pub struct Board {
     pub lines: Vec<Line>,
     pub history: Vec<Sequence>

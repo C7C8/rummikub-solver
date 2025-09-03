@@ -23,6 +23,7 @@ use crate::{Board, Color, Line, LineType, Move, Sequence, Tile};
  *********/
 
 impl Tile {
+    /// Validate that this tile obeys the game rules.
     pub fn validate(&self) -> Result<(), String> {
         trace!("Validating tile {}", self);
         if self.value > 13 {
@@ -34,33 +35,11 @@ impl Tile {
 }
 
 /*********
- * MOVES *
- *********/
-
-impl Move {
-    fn validate(&self, board: &Board) -> Result<(), String> {
-        trace!("Validating move {}", self);
-        //TODO Implement
-        match self {
-            Move::Split { line_idx, location} => {
-                Ok(())
-            }
-            Move::Add { location, line_idx, tile } => {
-                Ok(())
-            }
-            Move::Remove { line_idx, location} => {
-                Ok(())
-            }
-        }
-    }
-}
-
-/*********
  * LINES *
  *********/
 
 impl Line {
-    /// Validate that is line meets the game rules
+    /// Validate that this line meets the game rules
     pub fn validate(&self) -> Result<(), String> {
         debug!("Validating line {}", self);
 
@@ -144,13 +123,16 @@ impl Line {
         }
     }
 
+    /// Validate that this move can be performed against this line
     pub fn validate_move(&self, r#move: &Move) -> Result<(), String> {
         Ok(())
     }
 
-    pub fn execute_move(&self, r#move: &Move) -> Result<(), String> {
+    /// Execute a given move against this line. In the event of a split move, this will return a
+    /// second line that should be added to the board.
+    pub fn execute_move(&self, r#move: &Move) -> Result<Option<Line>, String> {
         // TODO implement
-        Ok(())
+        Ok(None)
     }
 }
 
@@ -174,7 +156,7 @@ impl Board {
     }
 
     /// Validate that a given move can be executed -- **not** necessarily that the board will end
-    /// in a legal state at the end of that move. To confirm a *sequence* of move, see [validate_sequence]
+    /// in a legal state at the end of that move. To confirm a *sequence* of move, see [Board::validate_sequence]
     pub fn validate_move(&self, r#move: &Move) -> Result<(), String> {
         // TODO Implement
         Ok(())
