@@ -49,7 +49,9 @@ pub enum MoveLocation {
 /// A game move that can be executed. Does not necessarily leave the board in a rules-compliant
 /// state after execution.
 pub enum Move {
-    Split {
+
+    /// Split an exisitng line into two lines at a given point.
+    SplitLine {
         /// The index of the line in the board
         line_idx: u8,
 
@@ -57,7 +59,8 @@ pub enum Move {
         location: u8
     },
 
-    Add {
+    /// Add a tile to the beginning or end of a line.
+    AddTile {
         /// The index of the line in the board
         line_idx: u8,
 
@@ -68,12 +71,18 @@ pub enum Move {
         location: MoveLocation,
     },
 
-    Remove {
+    /// Remove a tile at the beginning or end of a line.
+    RemoveTile {
         /// The index of the line in the board
         line_idx: u8,
 
         /// Where to remove the tile - the beginning or the end
         location: MoveLocation
+    },
+
+    /// Create a new line entirely.
+    CreateLine {
+        tiles: Vec<Tile>
     }
 }
 /// Type of line - either a single number repeated across multiple colors, or tiles in an

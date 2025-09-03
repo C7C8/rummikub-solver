@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use librummikub::{Board, Color, Line, LineType, Tile};
+use librummikub::{Board, Color, Line, LineType, Move, MoveLocation, Tile};
 use log::LevelFilter;
 use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Root};
@@ -367,6 +367,7 @@ fn line_invalidate_sequence_all_wildcards() {
  * BOARDS *
  **********/
 
+/// Validate valid boards
 #[test]
 fn board_validate_happy_path() {
     let board = Board {
@@ -394,6 +395,7 @@ fn board_validate_happy_path() {
     assert!(board.validate().is_ok());
 }
 
+/// Invalidate error-containing boards
 #[test]
 fn board_validate_error() {
     let board = Board {

@@ -98,14 +98,25 @@ impl Display for MoveLocation {
 impl Display for Move {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Move::Split { line_idx, location } => {
+            Move::SplitLine { line_idx, location } => {
                 write!(f, "{}s{}", line_idx, location)
             }
-            Move::Add { line_idx, tile, location } => {
+            Move::AddTile { line_idx, tile, location } => {
                 write!(f, "{}a{}{}", line_idx, location, tile)
             }
-            Move::Remove { line_idx, location } => {
+            Move::RemoveTile { line_idx, location } => {
                 write!(f, "{}r{}", line_idx, location)
+            }
+            Move::CreateLine { tiles } => {
+                write!(f, "-c-")?;
+                for (i, tile) in tiles.iter().enumerate() {
+                    write!(f, "{}", tile)?;
+
+                    if i < tiles.len() - 1 {
+                        write!(f, "-")?;
+                    }
+                }
+                Ok(())
             }
         }
     }
