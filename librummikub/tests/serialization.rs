@@ -19,7 +19,7 @@ use log4rs::append::console::ConsoleAppender;
 use log4rs::Config;
 use log4rs::config::{Appender, Root};
 use log::LevelFilter;
-use librummikub::{Color, Move, MoveLocation, Tile};
+use librummikub::{Color, Line, LineType, Move, MoveLocation, Tile};
 
 #[cfg(test)]
 #[ctor::ctor]
@@ -110,6 +110,40 @@ fn remove_move_serialization() {
         (Move::Remove {line_idx: 2, location: MoveLocation::End}, "2r>"),
         (Move::Remove {line_idx: 10, location: MoveLocation::Beginning}, "10r<"),
         (Move::Remove {line_idx: 100, location: MoveLocation::End}, "100r>"),
+    ];
+
+    for case in cases {
+        assert_eq!(case.0.to_string(), case.1)
+    }
+}
+
+#[test]
+fn line_serialization() {
+    let cases = vec![
+        (
+            Line {r#type: LineType::NumberSequence, tiles: vec![
+                Tile {value: 1, color: Color::Red},
+                Tile {value: 2, color: Color::Red},
+                Tile {value: 3, color: Color::Red}
+            ]},
+            "M:R1;R2;R3;"
+        ),
+        (
+            Line {r#type: LineType::SingleNumber, tiles: vec![
+                Tile {value: 1, color: Color::Red},
+                Tile {value: 1, color: Color::Blue},
+                Tile {value: 1, color: Color::Yellow}
+            ]},
+            "S:R1;B1;Y1;"
+        ),
+        (
+            Line {r#type: LineType::NumberSequence, tiles: vec![
+                Tile {value: 1, color: Color::Red},
+                Tile {value: 0, color: Color::Red},
+                Tile {value: 3, color: Color::Red}
+            ]},
+            "M:R1;R*;R3;"
+        )
     ];
 
     for case in cases {

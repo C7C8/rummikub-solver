@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+use crate::{Color, Line, LineType, Move, MoveLocation, Tile};
 use std::fmt::{Display, Formatter, Write};
-use crate::{Color, Move, MoveLocation, Tile};
 
 /*********
  * TILES *
@@ -36,6 +36,23 @@ impl Display for Tile {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let value_code = if self.value == 0 { String::from('*') } else { self.value.to_string() };
         write!(f, "{}{}", self.color, value_code)
+    }
+}
+
+/*********
+ * LINES *
+ *********/
+
+impl Display for Line {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self.r#type {
+            LineType::SingleNumber => write!(f, "S:")?,
+            LineType::NumberSequence => write!(f, "M:")?,
+        }
+        for tile in self.tiles.iter() {
+            write!(f, "{};", tile)?
+        }
+        Ok(())
     }
 }
 
