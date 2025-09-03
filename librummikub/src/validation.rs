@@ -18,7 +18,7 @@ use std::collections::HashSet;
 use log::{debug, trace};
 use crate::{Board, Color, Line, LineType, Move, Sequence, Tile};
 
-/* *******
+/*********
  * TILES *
  *********/
 
@@ -71,7 +71,7 @@ impl Line {
 
         // Validate each tile individually - valid lines cannot have invalid tiles.
         for (i, tile) in self.tiles.iter().enumerate() {
-            if let Ok(_) = tile.validate() {} else if let Err(e) = tile.validate() {
+            if let Err(e) = tile.validate() {
                 return Err(format!("Invalid tile at index {}: {}", i, e))
             }
         }
@@ -161,7 +161,15 @@ impl Line {
 impl Board {
     /// Validate that the board is in a good state according to the game rules.
     pub fn validate(&self) -> Result<(), String> {
-        // TODO Implement
+        trace!("Validating board {}", self);
+
+        // Validate tiles
+        for (i, line) in self.lines.iter().enumerate() {
+            if let Err(e) = line.validate() {
+                return Err(format!("Invalid line at index {}: {}", i, e));
+            }
+        }
+
         Ok(())
     }
 

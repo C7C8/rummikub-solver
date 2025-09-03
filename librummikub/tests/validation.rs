@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use librummikub::{Color, Line, LineType, Tile};
+use librummikub::{Board, Color, Line, LineType, Tile};
 use log::LevelFilter;
 use log4rs::append::console::ConsoleAppender;
 use log4rs::config::{Appender, Root};
@@ -360,5 +360,66 @@ fn line_invalidate_sequence_all_wildcards() {
             ]
         }.validate().err().unwrap(),
         "Line is all wildcards"
+    );
+}
+
+/**********
+ * BOARDS *
+ **********/
+
+#[test]
+fn board_validate_happy_path() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 1, color: Color::Blue},
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            },
+            Line {
+                r#type: LineType::NumberSequence,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Red},
+                    Tile {value: 3, color: Color::Red},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+
+    assert!(board.validate().is_ok());
+}
+
+#[test]
+fn board_validate_error() {
+    let board = Board {
+        lines: vec![
+            Line {
+                r#type: LineType::SingleNumber,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Blue},
+                    Tile {value: 1, color: Color::Yellow},
+                ]
+            },
+            Line {
+                r#type: LineType::NumberSequence,
+                tiles: vec![
+                    Tile {value: 1, color: Color::Red},
+                    Tile {value: 2, color: Color::Red},
+                    Tile {value: 3, color: Color::Red},
+                ]
+            }
+        ],
+        history: vec![],
+    };
+
+    assert_eq!(
+        board.validate().err().unwrap(),
+        "Invalid line at index 0: Tile at index 1 has value 2 but 1 was expected"
     );
 }
